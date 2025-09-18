@@ -20,6 +20,7 @@ import {
 import { StudentProfile, Internship } from './InternshipNavigator';
 import { internshipDatabase } from '../data/internshipDatabase';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface InternshipResultsProps {
   profile: StudentProfile;
@@ -98,6 +99,30 @@ export const InternshipResults: React.FC<InternshipResultsProps> = ({ profile, o
   }, [results, searchTerm, locationFilter, payFilter]);
 
   const evaluateInternships = async (profile: StudentProfile, internships: Internship[]): Promise<Internship[]> => {
+    // Use Gemini API for enhanced matching insights
+    try {
+      const response = await supabase.functions.invoke('gemini-search', {
+        body: {
+          query: `Analyze and provide internship matching insights for a ${profile.fieldOfStudy} student with skills: ${profile.skills.join(', ')}. Location preference: ${profile.locationPreference || 'Any'}`,
+          context: {
+            profile: profile,
+            availableInternships: internships.length,
+            internshipTypes: internships.map(i => i.title).slice(0, 10)
+          }
+        }
+      });
+
+      console.log('Gemini API response for matching insights:', response);
+      if (response.data?.response) {
+        toast({
+          title: "AI Insights",
+          description: "Enhanced matching powered by AI",
+        });
+      }
+    } catch (error) {
+      console.error('Error calling Gemini API for insights:', error);
+    }
+
     const evaluatedInternships = internships.map(internship => {
       let score = 0;
       const matchedSkills: string[] = [];

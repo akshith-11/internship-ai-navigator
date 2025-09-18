@@ -1,1 +1,15 @@
 project_id = "iawxfzzeruniencoiezs"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://lovable.dev"]
+jwt_expiry = 3600
+
+[auth.external.google]
+enabled = true
+client_id = ""
+secret = ""
+
+[functions.gemini-search]
+verify_jwt = true
